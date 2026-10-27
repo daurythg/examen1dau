@@ -20,6 +20,51 @@ import { obtenerToken, olvidarSesion } from "./auth.js";
  * Ningún otro archivo debe llamar a fetch directamente (salvo auth.js, ya hecho).
  */
 export const request = async (ruta, opciones = {}) => {
-  // TODO
-  throw new Error("TODO [F1]: request() no implementado");
+  const cabeceras = new Headers(opciones.headers ?? {});
+  cabeceras.set("Accept", "application/json");
+
+  const token = obtenerToken();
+  if (token) cabeceras.set("Authorization", `Bearer ${token}`);
+
+  let cuerpo = opciones.body;
+  if (cuerpo !== null && typeof cuerpo === "object" &&
+      !(typeof FormData !== "undefined" && cuerpo instanceof FormData)) {
+    cabeceras.set("Content-Type", "application/json");
+    cuerpo = JSON.stringify(cuerpo);
+  }
+
+  const controlador = new AbortController();
+  const temporizador = setTimeout(() => controlador.abort(), TIEMPO_MAXIMO_MS);
+
+  try {
+    let respuesta;
+    try {
+      respuesta = await fetch(`${BASE_URL}${ruta}`, {
+        ...opciones,
+        headers: cabeceras,
+        body: cuerpo,
+        signal: controlador.signal,
+      });
+    } catch (error) {
+      if (error.name === "AbortError") {
+        throw new ErrorApi(408, { mensaje: "La solicitud excedió el tiempo máximo." });
+      }
+      throw error;
+    }
+
+    if (respuesta.status === 204) return null;
+
+    const datos = await respuesta.json().catch(() => ({}));
+    if (!respuesta.ok) {
+      if (respuesta.status === 401) {
+        olvidarSesion();
+        window.location.reload();
+      }
+      throw new ErrorApi(respuesta.status, datos);
+    }
+
+    return datos;
+  } finally {
+    clearTimeout(temporizador);
+  }
 };
