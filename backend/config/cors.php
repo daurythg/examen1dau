@@ -11,7 +11,9 @@ return [
         'http://127.0.0.1:5173',
     ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^https://[a-z0-9-]+-5173\.app\.github\.dev$#',
+    ],
 
     'allowed_headers' => ['Authorization', 'Content-Type', 'Accept'],
 
