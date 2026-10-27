@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Equipo;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * TODO [B1] Validación declarativa de creación y actualización de equipos.
@@ -30,15 +32,47 @@ class GuardarEquipoRequest extends FormRequest
 
     public function rules(): array
     {
+        $equipo = $this->route('equipo');
+        $equipoId = $equipo instanceof Equipo ? $equipo->getKey() : $equipo;
+
         return [
-            // TODO
+            'codigo' => [
+                'required',
+                'string',
+                'max:20',
+                'regex:/^EQ-\d{4}$/',
+                Rule::unique('equipos', 'codigo')->ignore($equipoId),
+            ],
+            'nombre' => ['required', 'string', 'min:3', 'max:120'],
+            'categoria_id' => ['required', 'integer', 'exists:categorias,id'],
+            'estado' => ['sometimes', Rule::in(['disponible', 'mantenimiento'])],
+            'fecha_adquisicion' => ['required', 'date', 'before_or_equal:today'],
+            'costo_interno' => ['required', 'numeric', 'min:0'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            // TODO
+            'codigo.required' => 'El código es obligatorio.',
+            'codigo.string' => 'El código debe ser texto.',
+            'codigo.max' => 'El código no puede tener más de :max caracteres.',
+            'codigo.regex' => 'El código debe tener el formato EQ-0000.',
+            'codigo.unique' => 'El código ya está registrado.',
+            'nombre.required' => 'El nombre es obligatorio.',
+            'nombre.string' => 'El nombre debe ser texto.',
+            'nombre.min' => 'El nombre debe tener al menos :min caracteres.',
+            'nombre.max' => 'El nombre no puede tener más de :max caracteres.',
+            'categoria_id.required' => 'La categoría es obligatoria.',
+            'categoria_id.integer' => 'La categoría debe ser un número entero.',
+            'categoria_id.exists' => 'La categoría seleccionada no existe.',
+            'estado.in' => 'El estado solo puede ser disponible o mantenimiento.',
+            'fecha_adquisicion.required' => 'La fecha de adquisición es obligatoria.',
+            'fecha_adquisicion.date' => 'La fecha de adquisición no es válida.',
+            'fecha_adquisicion.before_or_equal' => 'La fecha de adquisición no puede ser futura.',
+            'costo_interno.required' => 'El costo interno es obligatorio.',
+            'costo_interno.numeric' => 'El costo interno debe ser numérico.',
+            'costo_interno.min' => 'El costo interno debe ser mayor o igual a cero.',
         ];
     }
 }
