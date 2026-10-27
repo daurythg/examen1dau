@@ -1,3 +1,4 @@
+HEAD
 # IF0009 · Examen I · Préstamo de Equipos
 
 Universidad de Costa Rica · Sede de Guanacaste · II Ciclo 2026
@@ -71,3 +72,6 @@ Cada archivo describe en su comentario `TODO` exactamente lo que se espera.
 - **Usted responde por cada línea de este repositorio**, la haya escrito usted o una herramienta.
   A las 11:00 se entrega la Parte B (en papel, sin computadora), con preguntas sobre su propio código.
   Lea y entienda lo que envía.
+
+# examen1dau
+ origin/main
